@@ -298,7 +298,7 @@ async function disconnectWallet(showStatus = true) {
   renderFanProfile();
   renderShotState();
   if (showStatus) {
-    setStatus("Wallet disconnected in this app. Revoke site access in your wallet for a full provider disconnect.", "success");
+    setStatus("Wallet disconnected.", "success");
   }
 }
 
