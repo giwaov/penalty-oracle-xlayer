@@ -5,8 +5,8 @@ Goal: a public Vercel URL that judges and nontechnical users can open, try, and 
 ## Current Production
 
 - Demo: https://xkick.vercel.app
-- X Layer contract: `0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39`
-- Explorer: https://www.okx.com/web3/explorer/xlayer/address/0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39
+- X Layer contract: `0xC805aF7B45a952EA1A4DA7851b949e3692b7EB77`
+- Explorer: https://www.okx.com/web3/explorer/xlayer/address/0xC805aF7B45a952EA1A4DA7851b949e3692b7EB77
 
 ## What Must Be Live
 

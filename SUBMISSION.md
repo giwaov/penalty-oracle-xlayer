@@ -30,14 +30,14 @@ The user opens the app, tries Practice Mode if they do not have gas, connects an
 
 - Contract deployed on X Layer mainnet
 - Chain ID: `196`
-- Contract: `0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39`
-- Explorer: https://www.okx.com/web3/explorer/xlayer/address/0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39
+- Contract: `0xC805aF7B45a952EA1A4DA7851b949e3692b7EB77`
+- Explorer: https://www.okx.com/web3/explorer/xlayer/address/0xC805aF7B45a952EA1A4DA7851b949e3692b7EB77
 - Core game actions are on-chain: squad join and daily penalty
 
 ## Proof Of Work
 
 - Demo URL: https://xkick.vercel.app
-- Contract address: `0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39`
+- Contract address: `0xC805aF7B45a952EA1A4DA7851b949e3692b7EB77`
 - GitHub repository: https://github.com/giwaov/penalty-oracle-xlayer
 - X account: TBD
 - Demo video: TBD

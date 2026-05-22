@@ -6,7 +6,7 @@ Live demo: https://xkick.vercel.app
 
 GitHub: https://github.com/giwaov/penalty-oracle-xlayer
 
-X Layer contract: `0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39`
+X Layer contract: `0xC805aF7B45a952EA1A4DA7851b949e3692b7EB77`
 
 ## What It Does
 
