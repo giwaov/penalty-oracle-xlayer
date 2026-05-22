@@ -108,7 +108,9 @@ const elements = {
   shotButtons: document.querySelectorAll(".shot-zone"),
   shotLimit: document.querySelector("#shotLimit"),
   practiceShot: document.querySelector("#practiceShot"),
+  goalMouth: document.querySelector("#goalMouth"),
   keeper: document.querySelector("#keeper"),
+  ball: document.querySelector("#ball"),
   resultBanner: document.querySelector("#resultBanner"),
   oracleCommentary: document.querySelector("#oracleCommentary"),
   oracleInsight: document.querySelector("#oracleInsight"),
@@ -198,7 +200,7 @@ function setStatus(message, tone = "neutral", txHash = "") {
   }
 }
 
-async function transact(label, txFactory, afterReceipt) {
+async function transact(label, txFactory, afterReceipt, afterRefresh) {
   try {
     setStatus(`${label}: waiting for wallet confirmation...`);
     const tx = await txFactory();
@@ -207,8 +209,11 @@ async function transact(label, txFactory, afterReceipt) {
     if (afterReceipt) afterReceipt(receipt);
     setStatus(`${label}: confirmed`, "success", receipt.hash);
     await refreshAll();
+    if (afterRefresh) afterRefresh(receipt);
   } catch (error) {
     const reason = error?.shortMessage || error?.reason || error?.message || "Transaction failed";
+    elements.goalMouth.dataset.phase = "idle";
+    clearSelectedShot();
     setStatus(reason, "error");
   }
 }
@@ -547,6 +552,44 @@ function renderActivityFeed() {
   }
 }
 
+function clearSelectedShot() {
+  for (const button of elements.shotButtons) {
+    button.dataset.selected = "false";
+  }
+}
+
+function setResultBanner(message, result = "") {
+  elements.resultBanner.textContent = message;
+  if (result) {
+    elements.resultBanner.dataset.result = result;
+  } else {
+    delete elements.resultBanner.dataset.result;
+  }
+}
+
+function resetArenaVisuals() {
+  elements.goalMouth.dataset.phase = "idle";
+  delete elements.goalMouth.dataset.result;
+  delete elements.ball.dataset.shot;
+  elements.keeper.dataset.dive = "1";
+  clearSelectedShot();
+  setResultBanner(elements.resultBanner.textContent);
+}
+
+function renderPenaltyResult(result) {
+  if (!result) return;
+  elements.goalMouth.dataset.phase = "result";
+  elements.goalMouth.dataset.result = result.goal ? "goal" : "save";
+  elements.ball.dataset.shot = String(result.shotIndex);
+  elements.keeper.dataset.dive = String(result.keeperIndex);
+  clearSelectedShot();
+
+  const message = result.goal
+    ? `Goal. You shot ${result.shot}, the keeper dived ${result.keeper}. +${result.points} points recorded on X Layer.`
+    : `Saved. You shot ${result.shot}, the keeper dived ${result.keeper}. +${result.points} grit points recorded on X Layer.`;
+  setResultBanner(message, result.goal ? "goal" : "save");
+}
+
 function renderShotState() {
   const fan = state.fan;
   const todayShots = fan?.todayShots || 0;
@@ -558,16 +601,22 @@ function renderShotState() {
 
   if (!state.account) {
     elements.shotLimit.textContent = "Connect to shoot";
-    elements.resultBanner.textContent = `Connect wallet, pick a squad, then take up to ${state.dailyShotLimit} penalties today.`;
+    resetArenaVisuals();
+    setResultBanner(`Connect wallet, pick a squad, then take up to ${state.dailyShotLimit} penalties today. Every shot is one transaction.`);
   } else if (!fan?.squad) {
     elements.shotLimit.textContent = "Pick squad first";
-    elements.resultBanner.textContent = "Choose a country squad before facing the AI keeper.";
+    resetArenaVisuals();
+    setResultBanner("Choose a country squad before facing the AI keeper.");
   } else if (limitReached) {
     elements.shotLimit.textContent = `${todayShots}/${state.dailyShotLimit} used today`;
-    elements.resultBanner.textContent = "Daily penalty limit reached. Come back tomorrow for five more shots.";
+    if (!state.lastResult) resetArenaVisuals();
+    setResultBanner("Daily penalty limit reached. Come back tomorrow for five more shots.");
   } else {
     elements.shotLimit.textContent = `${todayShots}/${state.dailyShotLimit} used today`;
-    elements.resultBanner.textContent = `${shotsRemaining} shot${shotsRemaining === 1 ? "" : "s"} left today. Aim left, center, or right.`;
+    if (!state.lastResult) {
+      resetArenaVisuals();
+      setResultBanner(`${shotsRemaining} shot${shotsRemaining === 1 ? "" : "s"} left today. Pick a corner; that kick will open one wallet transaction.`);
+    }
   }
 }
 
@@ -648,6 +697,8 @@ function parsePenaltyReceipt(receipt) {
         squad: squad?.name || squadCode,
         shot: directions[Number(parsed.args.shot)],
         keeper: directions[Number(parsed.args.keeper)],
+        shotIndex: Number(parsed.args.shot),
+        keeperIndex: Number(parsed.args.keeper),
         goal: parsed.args.goal,
         points: Number(parsed.args.pointsAwarded),
         hash: receipt.hash,
@@ -669,12 +720,25 @@ async function takeShot(direction) {
     return;
   }
 
-  elements.keeper.dataset.dive = String(direction);
+  state.lastResult = null;
+  clearSelectedShot();
+  const selected = [...elements.shotButtons].find((button) => Number(button.dataset.shot) === direction);
+  if (selected) selected.dataset.selected = "true";
+  elements.goalMouth.dataset.phase = "pending";
+  delete elements.goalMouth.dataset.result;
+  delete elements.resultBanner.dataset.result;
+  elements.ball.dataset.shot = String(direction);
+  elements.keeper.dataset.dive = "1";
+  setResultBanner(`${directions[direction]} selected. Confirm this one-shot transaction in your wallet.`);
+
   await transact(
-    "Penalty",
+    "Penalty shot",
     () => state.contract.takePenalty(direction),
     (receipt) => {
       state.lastResult = parsePenaltyReceipt(receipt);
+    },
+    () => {
+      renderPenaltyResult(state.lastResult);
     }
   );
 }
@@ -685,17 +749,16 @@ function practiceShot() {
   const goal = shot !== keeper;
   const squad = squads.find((item) => item.code === state.fan?.squad) || squads[Math.floor(Math.random() * squads.length)];
 
-  elements.keeper.dataset.dive = String(keeper);
   state.lastResult = {
     squad: squad.name,
     shot: directions[shot],
     keeper: directions[keeper],
+    shotIndex: shot,
+    keeperIndex: keeper,
     goal,
     points: goal ? 115 : 15,
   };
-  elements.resultBanner.textContent = goal
-    ? `Practice goal: ${squad.name} fires ${directions[shot]}, keeper dives ${directions[keeper]}.`
-    : `Practice save: keeper reads ${directions[shot]} and blocks it.`;
+  renderPenaltyResult(state.lastResult);
   renderOracleCommentary([...state.squadStats].sort((a, b) => b.points - a.points));
   setStatus("Practice Mode result is off-chain. Connect and shoot to record a real X Layer penalty.", "success");
 }

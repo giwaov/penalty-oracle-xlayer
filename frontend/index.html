@@ -83,16 +83,30 @@
             <h2>Daily Penalty</h2>
             <div class="panel-actions">
               <button id="practiceShot" class="ghost small">Practice Mode</button>
+              <span class="tx-pill">1 shot = 1 tx</span>
               <span id="shotLimit" class="panel-kicker">Five shots per day</span>
             </div>
           </div>
-          <div class="goal-mouth">
-            <button class="shot-zone" data-shot="0"><span>Left</span></button>
-            <button class="shot-zone" data-shot="1"><span>Center</span></button>
-            <button class="shot-zone" data-shot="2"><span>Right</span></button>
-            <div id="keeper" class="keeper">AI</div>
+          <div class="shootout-flow" aria-label="How to play the penalty">
+            <span>Pick corner</span>
+            <span>Confirm tx</span>
+            <span>Watch keeper</span>
           </div>
-          <div id="resultBanner" class="result-banner">Choose your squad, then aim your shot.</div>
+          <div id="goalMouth" class="goal-mouth" data-phase="idle">
+            <button class="shot-zone" data-shot="0"><small>Shoot</small><span>Left</span></button>
+            <button class="shot-zone" data-shot="1"><small>Shoot</small><span>Center</span></button>
+            <button class="shot-zone" data-shot="2"><small>Shoot</small><span>Right</span></button>
+            <div id="keeper" class="keeper" aria-label="AI keeper">
+              <span class="keeper-head"></span>
+              <span class="keeper-arm left"></span>
+              <span class="keeper-body">AI</span>
+              <span class="keeper-arm right"></span>
+              <span class="keeper-leg left"></span>
+              <span class="keeper-leg right"></span>
+            </div>
+            <div id="ball" class="ball" aria-hidden="true"></div>
+          </div>
+          <div id="resultBanner" class="result-banner">Choose your squad, then every kick becomes one X Layer transaction.</div>
         </div>
 
         <div class="panel oracle-panel">
@@ -150,7 +164,7 @@
           <article>
             <span>3</span>
             <strong>Take your shot</strong>
-            <p>Aim left, center, or right. The AI keeper dives using live on-chain game state.</p>
+            <p>Aim left, center, or right. Each kick is one wallet transaction, then the AI keeper reveals the on-chain result.</p>
           </article>
           <article>
             <span>4</span>
