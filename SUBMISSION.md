@@ -10,11 +10,11 @@ AI Agent / GameFi / Social / Fan engagement
 
 ## Summary
 
-XKick is a World Cup AI shootout game on X Layer. Fans connect a wallet, join one of the 48 qualified World Cup squads, take five daily on-chain penalties, and compete through fan passports, squad leaderboards, live arena events, and AI Oracle commentary.
+XKick is a World Cup AI shootout game on X Layer. Fans connect a wallet, join one of the 48 qualified World Cup squads, take five daily on-chain penalties, and compete through fan passports, wallet-vs-wallet ranking, squad leaderboards, live arena events, and AI Oracle commentary.
 
 ## What I Built
 
-- X Layer Solidity contract for squad membership, daily penalties, scoring, streaks, and country stats
+- X Layer Solidity contract for squad membership, wallet registration, daily penalties, scoring, streaks, and country stats
 - Static Vercel frontend for nontechnical users
 - Practice Mode so visitors can test the shootout without wallet friction
 - Live Arena Feed that indexes recent `PenaltyTaken` events and links to X Layer explorer transactions
@@ -24,7 +24,7 @@ XKick is a World Cup AI shootout game on X Layer. Fans connect a wallet, join on
 
 ## How It Functions
 
-The user opens the app, tries Practice Mode if they do not have gas, connects an EVM wallet, switches to X Layer mainnet, chooses a country squad, and takes up to five penalties per UTC day. The contract calculates the keeper dive from current on-chain state, awards points, updates fan and squad records, and emits a public event. The frontend reads those events back into a live activity feed and uses the Oracle Agent to narrate the arena.
+The user opens the app, tries Practice Mode if they do not have gas, connects an EVM wallet, switches to X Layer mainnet, chooses a country squad, and takes up to five penalties per UTC day. The contract registers the wallet, calculates the keeper dive from current on-chain state, awards points, updates fan and squad records, and emits a public event. The frontend reads contract state and events back into player rankings, squad rankings, a live activity feed, and Oracle Agent narration.
 
 ## X Layer Integration
 
@@ -44,7 +44,7 @@ The user opens the app, tries Practice Mode if they do not have gas, connects an
 
 ## Why It Matters
 
-World Cup traffic is emotional, daily, and global. XKick gives fans a simple football ritual that creates real X Layer activity: join a squad, shoot up to five times per day, build streaks, share the result, and watch country momentum shift in public. Practice Mode lowers the entry barrier, while the live feed and AI agent make the product feel active even before a user connects a wallet.
+World Cup traffic is emotional, daily, and global. XKick gives fans a simple football ritual that creates real X Layer activity: join a squad, shoot up to five times per day, build streaks, climb the player board, share the result, and watch country momentum shift in public. Practice Mode lowers the entry barrier, while the live feed and AI agent make the product feel active even before a user connects a wallet.
 
 ## Submission Checklist
 

@@ -7,8 +7,11 @@ const abi = [
   "function dailyFanShots(address fan,uint256 day) view returns (uint256)",
   "function getFan(address fan) view returns (bytes32,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bool)",
   "function getSquad(bytes32 squad) view returns (uint256,uint256,uint256,uint256,uint256,uint256)",
+  "function playerCount() view returns (uint256)",
+  "function players(uint256 index) view returns (address)",
   "function joinSquad(bytes32 squad)",
   "function takePenalty(uint8 shot)",
+  "event PlayerRegistered(address indexed fan)",
   "event PenaltyTaken(uint256 indexed day,address indexed fan,bytes32 indexed squad,uint8 shot,uint8 keeper,bool goal,uint256 pointsAwarded,uint256 streak)",
 ];
 
@@ -77,6 +80,7 @@ const state = {
   isOwner: false,
   fan: null,
   squadStats: [],
+  playerStats: [],
   totalShots: 0,
   totalGoals: 0,
   currentDay: 0,
@@ -117,6 +121,8 @@ const elements = {
   totalShotsMetric: document.querySelector("#totalShotsMetric"),
   totalGoalsMetric: document.querySelector("#totalGoalsMetric"),
   topSquadMetric: document.querySelector("#topSquadMetric"),
+  topPlayerMetric: document.querySelector("#topPlayerMetric"),
+  playerLeaderboard: document.querySelector("#playerLeaderboard"),
   leaderboard: document.querySelector("#leaderboard"),
   activityFeed: document.querySelector("#activityFeed"),
   contractLink: document.querySelector("#contractLink"),
@@ -328,6 +334,7 @@ async function refreshAll() {
   await loadGlobalStats();
   await loadFanProfile();
   await loadSquads();
+  await loadPlayers();
   await loadRecentShots();
   renderShotState();
 }
@@ -405,6 +412,56 @@ async function loadSquads() {
   renderLeaderboard();
 }
 
+async function loadPlayers() {
+  const contract = await getReadContract();
+  if (!contract) {
+    state.playerStats = [];
+    renderPlayerLeaderboard();
+    return;
+  }
+
+  try {
+    const count = Number(await contract.playerCount());
+    const addresses = await Promise.all(
+      Array.from({ length: count }, (_, index) => contract.players(index))
+    );
+    const uniqueAddresses = [...new Set(addresses.map((address) => address.toLowerCase()))];
+
+    state.playerStats = await Promise.all(
+      uniqueAddresses.map(async (address) => {
+        const checksumAddress = ethers.getAddress(address);
+        const profile = await contract.getFan(checksumAddress);
+        const squadCode = parseSquadCode(profile[0]);
+        const squad = squads.find((item) => item.code === squadCode);
+        let todayShots = 0;
+        try {
+          todayShots = Number(await contract.dailyFanShots(checksumAddress, state.currentDay));
+        } catch {
+          todayShots = 0;
+        }
+
+        return {
+          address: checksumAddress,
+          squadCode,
+          squadName: squad?.name || squadCode || "Unassigned",
+          flag: squad ? flagFromIso(squad.iso) : "",
+          points: Number(profile[1]),
+          shots: Number(profile[2]),
+          goals: Number(profile[3]),
+          saves: Number(profile[4]),
+          streak: Number(profile[5]),
+          bestStreak: Number(profile[6]),
+          todayShots,
+        };
+      })
+    );
+  } catch {
+    state.playerStats = [];
+  }
+
+  renderPlayerLeaderboard();
+}
+
 async function loadRecentShots() {
   const contract = await getReadContract();
   if (!contract || !contract.queryFilter) {
@@ -477,6 +534,40 @@ function renderSquads() {
       await transact("Squad join", () => state.contract.joinSquad(squadBytes(squad.code)));
     });
     elements.squadGrid.append(button);
+  }
+}
+
+function renderPlayerLeaderboard() {
+  const ranked = [...state.playerStats].sort(
+    (a, b) => b.points - a.points || b.goals - a.goals || b.bestStreak - a.bestStreak || a.address.localeCompare(b.address)
+  );
+  elements.playerLeaderboard.replaceChildren();
+  elements.topPlayerMetric.textContent = ranked[0]?.points ? `${shortAddress(ranked[0].address)} (${ranked[0].points})` : "Awaiting players";
+
+  if (!ranked.length) {
+    const empty = document.createElement("div");
+    empty.className = "leaderboard-row player-row empty";
+    empty.textContent = "No registered wallets yet on this contract. Join a squad to enter the player leaderboard.";
+    elements.playerLeaderboard.append(empty);
+    return;
+  }
+
+  for (const [index, player] of ranked.entries()) {
+    const row = document.createElement("a");
+    row.className = "leaderboard-row player-row";
+    row.href = explorerAddressUrl(player.address);
+    row.target = "_blank";
+    row.rel = "noreferrer";
+    row.innerHTML = `
+      <span>${index + 1}</span>
+      <b>${player.flag}</b>
+      <strong>${shortAddress(player.address)}</strong>
+      <small>${player.points} pts</small>
+      <small>${player.goals}/${player.shots} goals</small>
+      <small>${player.streak} streak</small>
+      <small>${player.bestStreak} best</small>
+    `;
+    elements.playerLeaderboard.append(row);
   }
 }
 

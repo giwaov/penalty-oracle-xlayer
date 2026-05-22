@@ -273,7 +273,7 @@ h1 {
 }
 
 .scoreboard {
-  grid-template-columns: 0.7fr 0.7fr 1.6fr;
+  grid-template-columns: 0.65fr 0.65fr 1.25fr 1.25fr;
   margin-bottom: 18px;
 }
 
@@ -775,6 +775,18 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.035);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.player-row {
+  grid-template-columns: 34px 42px minmax(0, 1fr) repeat(4, minmax(76px, auto));
+}
+
+.leaderboard-row.empty {
+  display: block;
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .leaderboard-row span {

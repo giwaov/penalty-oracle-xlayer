@@ -41,6 +41,25 @@ contract XCupOracleArenaTest {
         require(exists, "missing fan");
         require(brazilMembers == 0, "brazil member not removed");
         require(moroccoMembers == 1, "morocco member not added");
+        require(arena.playerCount() == 1, "bad player count");
+        require(arena.players(0) == fan, "bad player address");
+    }
+
+    function testPlayerRegistryTracksUniqueWallets() public {
+        vm.prank(fan);
+        arena.joinSquad(BRAZIL);
+
+        vm.prank(fan);
+        arena.joinSquad(MOROCCO);
+
+        vm.prank(stranger);
+        arena.joinSquad(BRAZIL);
+
+        require(arena.playerCount() == 2, "duplicate player");
+        require(arena.playerSeen(fan), "fan not seen");
+        require(arena.playerSeen(stranger), "stranger not seen");
+        require(arena.players(0) == fan, "bad first player");
+        require(arena.players(1) == stranger, "bad second player");
     }
 
     function testCannotShootBeforeJoiningSquad() public {

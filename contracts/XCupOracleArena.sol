@@ -35,13 +35,16 @@ contract XCupOracleArena {
     uint256 public totalGoals;
 
     mapping(address => Fan) public fans;
+    mapping(address => bool) public playerSeen;
     mapping(bytes32 => Squad) public squads;
     mapping(bytes32 => bool) public squadSeen;
     mapping(uint256 => mapping(bytes32 => uint256)) public dailySquadPoints;
     mapping(address => mapping(uint256 => uint256)) public dailyFanShots;
+    address[] public players;
     bytes32[] public squadCodes;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed nextOwner);
+    event PlayerRegistered(address indexed fan);
     event SquadJoined(address indexed fan, bytes32 indexed squad, bytes32 indexed previousSquad);
     event PenaltyTaken(
         uint256 indexed day,
@@ -77,6 +80,7 @@ contract XCupOracleArena {
     function joinSquad(bytes32 squad) external {
         require(squad != bytes32(0), "missing squad");
 
+        _registerPlayer(msg.sender);
         Fan storage fan = fans[msg.sender];
         bytes32 previousSquad = fan.squad;
         require(previousSquad != squad, "already joined");
@@ -95,6 +99,16 @@ contract XCupOracleArena {
         squads[squad].members += 1;
 
         emit SquadJoined(msg.sender, squad, previousSquad);
+    }
+
+    function _registerPlayer(address fan) internal {
+        if (playerSeen[fan]) {
+            return;
+        }
+
+        playerSeen[fan] = true;
+        players.push(fan);
+        emit PlayerRegistered(fan);
     }
 
     function takePenalty(Direction shot) external {
@@ -201,5 +215,9 @@ contract XCupOracleArena {
 
     function squadCodeCount() external view returns (uint256) {
         return squadCodes.length;
+    }
+
+    function playerCount() external view returns (uint256) {
+        return players.length;
     }
 }
