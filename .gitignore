@@ -1,0 +1,16 @@
+cache/
+out/
+broadcast/
+
+.env
+.env.*
+!.env.example
+
+node_modules/
+frontend/.vercel/
+frontend/node_modules/
+
+*.log
+*.pid
+*.tmp
+*.bak

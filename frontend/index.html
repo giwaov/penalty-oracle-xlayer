@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Penalty Oracle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="topbar">
+        <div class="brand-lockup">
+          <img src="./assets/x-cup-header.jpg" alt="World Cup trophy in a colorful tournament tunnel" />
+          <strong>Penalty Oracle</strong>
+        </div>
+        <span>AI Shootout on X Layer</span>
+      </nav>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow">World Cup AI shootout</p>
+          <h1>Beat the AI keeper. Carry your squad.</h1>
+          <p class="lede">
+            Pick a country, take one penalty per day, and climb the on-chain leaderboard with goals,
+            streaks, and dramatic Oracle commentary.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="connectWallet" class="primary">Connect wallet</button>
+          <button id="deployContract" class="ghost">Deploy contract</button>
+        </div>
+      </section>
+
+      <section class="status-grid">
+        <div><span>Network</span><strong id="networkName">Not connected</strong></div>
+        <div><span>Wallet</span><strong id="walletAddress">-</strong></div>
+        <div><span>Contract</span><strong id="contractStatus">Not deployed</strong></div>
+        <div><span>Role</span><strong id="walletRole">Viewer</strong></div>
+      </section>
+
+      <p id="txStatus" class="tx-status" role="status"></p>
+
+      <section class="game-grid">
+        <div class="panel squad-panel">
+          <div class="panel-head">
+            <h2>Choose Your Squad</h2>
+            <span class="panel-kicker">Required to shoot</span>
+          </div>
+          <div id="squadGrid" class="squad-grid"></div>
+        </div>
+
+        <div class="panel passport-panel">
+          <div class="panel-head">
+            <h2>Fan Passport</h2>
+            <button id="shareProfile" class="ghost">Share</button>
+          </div>
+          <div class="passport">
+            <span id="passportFlag" class="passport-flag">◇</span>
+            <div>
+              <span id="passportSquad">No squad selected</span>
+              <strong id="passportPoints">0 pts</strong>
+              <small id="passportRecord">0 shots · 0 goals · 0 streak</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="arena-grid">
+        <div class="panel shootout-panel">
+          <div class="panel-head">
+            <h2>Daily Penalty</h2>
+            <div class="panel-actions">
+              <button id="practiceShot" class="ghost small">Practice Mode</button>
+              <span id="shotLimit" class="panel-kicker">One shot per day</span>
+            </div>
+          </div>
+          <div class="goal-mouth">
+            <button class="shot-zone" data-shot="0"><span>Left</span></button>
+            <button class="shot-zone" data-shot="1"><span>Center</span></button>
+            <button class="shot-zone" data-shot="2"><span>Right</span></button>
+            <div id="keeper" class="keeper">AI</div>
+          </div>
+          <div id="resultBanner" class="result-banner">Choose your squad, then aim your shot.</div>
+        </div>
+
+        <div class="panel oracle-panel">
+          <div class="panel-head">
+            <h2>Oracle Agent</h2>
+            <span class="panel-kicker">Live match voice</span>
+          </div>
+          <p id="oracleCommentary" class="oracle-commentary">
+            Waiting for the first penalty. The AI keeper is watching squad momentum.
+          </p>
+          <div id="oracleInsight" class="oracle-insight">
+            Insight: no live squad pattern yet. The first few penalties will teach the Oracle where momentum is forming.
+          </div>
+        </div>
+      </section>
+
+      <section class="scoreboard">
+        <div><span>Total Shots</span><strong id="totalShotsMetric">0</strong></div>
+        <div><span>Total Goals</span><strong id="totalGoalsMetric">0</strong></div>
+        <div><span>Top Squad</span><strong id="topSquadMetric">Awaiting shots</strong></div>
+      </section>
+
+      <section class="panel leaderboard-panel">
+        <div class="panel-head">
+          <h2>Country Leaderboard</h2>
+          <span class="panel-kicker">48 qualified squads</span>
+        </div>
+        <div id="leaderboard" class="leaderboard"></div>
+      </section>
+
+      <section class="panel activity-panel">
+        <div class="panel-head">
+          <h2>Live Arena Feed</h2>
+          <span class="panel-kicker">Recent X Layer penalties</span>
+        </div>
+        <div id="activityFeed" class="activity-feed"></div>
+      </section>
+
+      <section class="panel explainer">
+        <div class="panel-head">
+          <h2>How It Works</h2>
+          <span class="panel-kicker">New fan guide</span>
+        </div>
+        <div class="steps">
+          <article>
+            <span>1</span>
+            <strong>Connect wallet</strong>
+            <p>Use OKX Wallet or any EVM wallet on X Layer mainnet. You need a small amount of OKB for gas.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <strong>Pick a squad</strong>
+            <p>Choose the country you want to represent. Your squad unlocks daily penalties.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <strong>Take your shot</strong>
+            <p>Aim left, center, or right. The AI keeper dives using live on-chain game state.</p>
+          </article>
+          <article>
+            <span>4</span>
+            <strong>Climb the table</strong>
+            <p>Goals and streaks add points to your Fan Passport and country leaderboard.</p>
+          </article>
+        </div>
+        <div class="note-strip">
+          <span>Every squad join and penalty is recorded on X Layer. One wallet gets one shot per day.</span>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>Penalty Oracle</span>
+        <a id="contractLink" href="#" target="_blank" rel="noreferrer">View contract</a>
+      </footer>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.16.0/dist/ethers.umd.min.js"></script>
+    <script src="./config.js"></script>
+    <script src="./artifact.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
