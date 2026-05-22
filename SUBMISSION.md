@@ -38,7 +38,7 @@ The user opens the app, tries Practice Mode if they do not have gas, connects an
 
 - Demo URL: https://frontend-liart-two-92.vercel.app
 - Contract address: `0x6698Ac4582BD9b657236766bDae5995ac3B75284`
-- GitHub repository: TBD
+- GitHub repository: https://github.com/giwaov/penalty-oracle-xlayer
 - X account: TBD
 - Demo video: TBD
 
@@ -54,7 +54,7 @@ World Cup traffic is emotional, daily, and global. Penalty Oracle gives fans a o
 - [x] Add AI Oracle backend
 - [x] Add Practice Mode for nontechnical testing
 - [x] Add live on-chain activity feed
-- [ ] Publish public GitHub repository
+- [x] Publish public GitHub repository
 - [ ] Create dedicated X account
 - [ ] Post submission tagging `@XLayerOfficial`
 - [ ] Record 1-3 minute demo video

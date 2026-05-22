@@ -50,7 +50,7 @@ A World Cup AI shootout game on X Layer.
 
 Contract: 0x6698Ac4582BD9b657236766bDae5995ac3B75284
 Demo: https://frontend-liart-two-92.vercel.app
-Repo: {REPO}
+Repo: https://github.com/giwaov/penalty-oracle-xlayer
 Video: {VIDEO}
 
 @XLayerOfficial
