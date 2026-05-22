@@ -1,17 +1,17 @@
 # XKick
 
-XKick is a World Cup AI shootout game built for the X Layer Build X Hackathon. Fans connect a wallet, choose one of the 48 qualified World Cup squads, take one on-chain penalty per day, and compete on a live country leaderboard.
+XKick is a World Cup AI shootout game built for the X Layer Build X Hackathon. Fans connect a wallet, choose one of the 48 qualified World Cup squads, take five on-chain penalties per day, and compete on a live country leaderboard.
 
 Live demo: https://xkick.vercel.app
 
 GitHub: https://github.com/giwaov/penalty-oracle-xlayer
 
-X Layer contract: `0x6698Ac4582BD9b657236766bDae5995ac3B75284`
+X Layer contract: `0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39`
 
 ## What It Does
 
 - Lets fans join a country squad on X Layer
-- Records one daily penalty per wallet
+- Records five daily penalties per wallet
 - Awards points for goals, streaks, and saved-shot grit
 - Shows a live leaderboard for all 48 qualified World Cup teams
 - Streams recent on-chain penalties from contract events
@@ -123,7 +123,7 @@ If no API key is present, the app still works with deterministic fallback commen
 3. Connect OKX Wallet or another EVM wallet.
 4. Switch to X Layer mainnet.
 5. Pick a qualified World Cup squad.
-6. Take one daily penalty.
+6. Take up to five daily penalties.
 7. Watch the fan passport, live feed, and country leaderboard update.
 
 ## Notes

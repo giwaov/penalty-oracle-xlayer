@@ -5,8 +5,8 @@ Goal: a public Vercel URL that judges and nontechnical users can open, try, and 
 ## Current Production
 
 - Demo: https://xkick.vercel.app
-- X Layer contract: `0x6698Ac4582BD9b657236766bDae5995ac3B75284`
-- Explorer: https://www.okx.com/web3/explorer/xlayer/address/0x6698Ac4582BD9b657236766bDae5995ac3B75284
+- X Layer contract: `0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39`
+- Explorer: https://www.okx.com/web3/explorer/xlayer/address/0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39
 
 ## What Must Be Live
 
@@ -72,7 +72,7 @@ Visitors can:
 - connect OKX Wallet or another EVM wallet
 - switch to X Layer mainnet
 - choose a World Cup squad
-- take one daily on-chain penalty
+- take up to five daily on-chain penalties
 - inspect the transaction from the status link or Live Arena Feed
 
 ## 6. Final Hackathon Tasks

@@ -1,5 +1,5 @@
 window.XCUP_CONFIG = {
-  contractAddress: "0x6698Ac4582BD9b657236766bDae5995ac3B75284",
+  contractAddress: "0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39",
   preferredChainId: 196,
   chains: {
     196: {

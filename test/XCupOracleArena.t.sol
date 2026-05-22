@@ -49,15 +49,17 @@ contract XCupOracleArenaTest {
         arena.takePenalty(XCupOracleArena.Direction.Left);
     }
 
-    function testCanTakeOnePenaltyPerDay() public {
+    function testCanTakeFivePenaltiesPerDay() public {
         vm.prank(fan);
         arena.joinSquad(BRAZIL);
 
-        vm.prank(fan);
-        arena.takePenalty(XCupOracleArena.Direction.Left);
+        for (uint256 i = 0; i < arena.DAILY_SHOT_LIMIT(); i++) {
+            vm.prank(fan);
+            arena.takePenalty(XCupOracleArena.Direction(uint8(i % 3)));
+        }
 
         vm.prank(fan);
-        vm.expectRevert(bytes("already shot today"));
+        vm.expectRevert(bytes("daily shot limit reached"));
         arena.takePenalty(XCupOracleArena.Direction.Right);
 
         vm.warp(block.timestamp + 1 days);
@@ -65,7 +67,8 @@ contract XCupOracleArenaTest {
         arena.takePenalty(XCupOracleArena.Direction.Right);
 
         (, , uint256 shots, , , , , , ) = arena.getFan(fan);
-        require(shots == 2, "bad shots");
+        require(shots == arena.DAILY_SHOT_LIMIT() + 1, "bad shots");
+        require(arena.dailyFanShots(fan, block.timestamp / 1 days) == 1, "bad new day shots");
     }
 
     function testPenaltyUpdatesFanAndSquadStats() public {

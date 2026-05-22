@@ -22,7 +22,7 @@ https://xkick.vercel.app
 XKick is live.
 
 Pick a World Cup squad.
-Take one penalty per day.
+Take five penalties per day.
 Beat the AI keeper.
 Climb the on-chain country table.
 
@@ -39,7 +39,7 @@ We are building XKick for the X Layer Build X Hackathon.
 It is a World Cup AI shootout game:
 
 - choose a qualified country squad
-- take one daily on-chain penalty
+- take five daily on-chain penalties
 - beat the AI keeper
 - climb the live country leaderboard
 - share your fan passport
@@ -141,7 +141,7 @@ Submission: XKick
 
 A World Cup AI shootout game on X Layer.
 
-Contract: 0x6698Ac4582BD9b657236766bDae5995ac3B75284
+Contract: 0x0C3bf4A6c9A1C90FCc6264558305979F1cD54d39
 Demo: https://xkick.vercel.app
 Repo: https://github.com/giwaov/penalty-oracle-xlayer
 Video: {VIDEO}

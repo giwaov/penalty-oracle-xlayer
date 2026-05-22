@@ -3,6 +3,8 @@ const abi = [
   "function totalShots() view returns (uint256)",
   "function totalGoals() view returns (uint256)",
   "function currentDay() view returns (uint256)",
+  "function DAILY_SHOT_LIMIT() view returns (uint256)",
+  "function dailyFanShots(address fan,uint256 day) view returns (uint256)",
   "function getFan(address fan) view returns (bytes32,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bool)",
   "function getSquad(bytes32 squad) view returns (uint256,uint256,uint256,uint256,uint256,uint256)",
   "function joinSquad(bytes32 squad)",
@@ -78,6 +80,7 @@ const state = {
   totalShots: 0,
   totalGoals: 0,
   currentDay: 0,
+  dailyShotLimit: 5,
   lastResult: null,
   recentShots: [],
   oracleRequestId: 0,
@@ -333,6 +336,11 @@ async function loadGlobalStats() {
   state.totalShots = Number(await contract.totalShots());
   state.totalGoals = Number(await contract.totalGoals());
   state.currentDay = Number(await contract.currentDay());
+  try {
+    state.dailyShotLimit = Number(await contract.DAILY_SHOT_LIMIT());
+  } catch {
+    state.dailyShotLimit = 5;
+  }
   elements.totalShotsMetric.textContent = String(state.totalShots);
   elements.totalGoalsMetric.textContent = String(state.totalGoals);
 }
@@ -344,6 +352,12 @@ async function loadFanProfile() {
     return;
   }
   const profile = await state.contract.getFan(state.account);
+  let todayShots = 0;
+  try {
+    todayShots = Number(await state.contract.dailyFanShots(state.account, state.currentDay));
+  } catch {
+    todayShots = profile[7] >= state.currentDay && Number(profile[2]) > 0 ? 1 : 0;
+  }
   state.fan = {
     squad: parseSquadCode(profile[0]),
     points: Number(profile[1]),
@@ -353,6 +367,7 @@ async function loadFanProfile() {
     streak: Number(profile[5]),
     bestStreak: Number(profile[6]),
     lastShotDay: Number(profile[7]),
+    todayShots,
     exists: profile[8],
   };
   renderFanProfile();
@@ -534,23 +549,25 @@ function renderActivityFeed() {
 
 function renderShotState() {
   const fan = state.fan;
-  const alreadyShot = Boolean(fan?.shots) && fan.lastShotDay >= state.currentDay;
+  const todayShots = fan?.todayShots || 0;
+  const shotsRemaining = Math.max(0, state.dailyShotLimit - todayShots);
+  const limitReached = todayShots >= state.dailyShotLimit;
   for (const button of elements.shotButtons) {
-    button.disabled = !state.contract || !fan?.squad || alreadyShot;
+    button.disabled = !state.contract || !fan?.squad || limitReached;
   }
 
   if (!state.account) {
     elements.shotLimit.textContent = "Connect to shoot";
-    elements.resultBanner.textContent = "Connect wallet, pick a squad, then take your daily penalty.";
+    elements.resultBanner.textContent = `Connect wallet, pick a squad, then take up to ${state.dailyShotLimit} penalties today.`;
   } else if (!fan?.squad) {
     elements.shotLimit.textContent = "Pick squad first";
     elements.resultBanner.textContent = "Choose a country squad before facing the AI keeper.";
-  } else if (alreadyShot) {
-    elements.shotLimit.textContent = "Shot used today";
-    elements.resultBanner.textContent = "Daily shot used. Come back tomorrow for another penalty.";
+  } else if (limitReached) {
+    elements.shotLimit.textContent = `${todayShots}/${state.dailyShotLimit} used today`;
+    elements.resultBanner.textContent = "Daily penalty limit reached. Come back tomorrow for five more shots.";
   } else {
-    elements.shotLimit.textContent = "Shot available";
-    elements.resultBanner.textContent = "Aim left, center, or right. The AI keeper is ready.";
+    elements.shotLimit.textContent = `${todayShots}/${state.dailyShotLimit} used today`;
+    elements.resultBanner.textContent = `${shotsRemaining} shot${shotsRemaining === 1 ? "" : "s"} left today. Aim left, center, or right.`;
   }
 }
 

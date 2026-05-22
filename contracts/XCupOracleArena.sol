@@ -30,6 +30,7 @@ contract XCupOracleArena {
     }
 
     address public owner;
+    uint256 public constant DAILY_SHOT_LIMIT = 5;
     uint256 public totalShots;
     uint256 public totalGoals;
 
@@ -37,6 +38,7 @@ contract XCupOracleArena {
     mapping(bytes32 => Squad) public squads;
     mapping(bytes32 => bool) public squadSeen;
     mapping(uint256 => mapping(bytes32 => uint256)) public dailySquadPoints;
+    mapping(address => mapping(uint256 => uint256)) public dailyFanShots;
     bytes32[] public squadCodes;
 
     event OwnershipTransferred(address indexed previousOwner, address indexed nextOwner);
@@ -102,7 +104,7 @@ contract XCupOracleArena {
         require(fan.squad != bytes32(0), "join squad first");
 
         uint256 day = currentDay();
-        require(fan.shots == 0 || fan.lastShotDay < day, "already shot today");
+        require(dailyFanShots[msg.sender][day] < DAILY_SHOT_LIMIT, "daily shot limit reached");
 
         Direction keeper = keeperDive(msg.sender, fan.squad, day, fan.shots);
         bool goal = shot != keeper;
@@ -110,6 +112,7 @@ contract XCupOracleArena {
 
         fan.lastShotDay = day;
         fan.shots += 1;
+        dailyFanShots[msg.sender][day] += 1;
         totalShots += 1;
 
         Squad storage squad = squads[fan.squad];
