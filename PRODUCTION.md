@@ -4,7 +4,7 @@ Goal: a public Vercel URL that judges and nontechnical users can open, try, and 
 
 ## Current Production
 
-- Demo: https://frontend-liart-two-92.vercel.app
+- Demo: https://penalty-oracle-xlayer.vercel.app
 - X Layer contract: `0x6698Ac4582BD9b657236766bDae5995ac3B75284`
 - Explorer: https://www.okx.com/web3/explorer/xlayer/address/0x6698Ac4582BD9b657236766bDae5995ac3B75284
 

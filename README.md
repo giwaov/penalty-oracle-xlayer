@@ -2,7 +2,7 @@
 
 Penalty Oracle is a World Cup AI shootout game built for the X Layer Build X Hackathon. Fans connect a wallet, choose one of the 48 qualified World Cup squads, take one on-chain penalty per day, and compete on a live country leaderboard.
 
-Live demo: https://frontend-liart-two-92.vercel.app
+Live demo: https://penalty-oracle-xlayer.vercel.app
 
 GitHub: https://github.com/giwaov/penalty-oracle-xlayer
 

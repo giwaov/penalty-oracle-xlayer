@@ -36,7 +36,7 @@ The user opens the app, tries Practice Mode if they do not have gas, connects an
 
 ## Proof Of Work
 
-- Demo URL: https://frontend-liart-two-92.vercel.app
+- Demo URL: https://penalty-oracle-xlayer.vercel.app
 - Contract address: `0x6698Ac4582BD9b657236766bDae5995ac3B75284`
 - GitHub repository: https://github.com/giwaov/penalty-oracle-xlayer
 - X account: TBD
