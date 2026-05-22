@@ -91,6 +91,8 @@ const elements = {
   deployContract: document.querySelector("#deployContract"),
   networkName: document.querySelector("#networkName"),
   walletAddress: document.querySelector("#walletAddress"),
+  walletButtonLabel: document.querySelector("#walletButtonLabel"),
+  walletButtonHint: document.querySelector("#walletButtonHint"),
   contractStatus: document.querySelector("#contractStatus"),
   walletRole: document.querySelector("#walletRole"),
   txStatus: document.querySelector("#txStatus"),
@@ -148,6 +150,12 @@ function setContractStatus() {
   elements.contractStatus.textContent = contractAddress ? shortAddress(contractAddress) : "Not deployed";
   elements.deployContract.hidden = Boolean(contractAddress);
   elements.contractLink.href = contractAddress ? explorerAddressUrl(contractAddress) : "#";
+}
+
+function setWalletButton(connected = false) {
+  elements.connectWallet.dataset.connected = connected ? "true" : "false";
+  elements.walletButtonLabel.textContent = connected ? "Disconnect" : "Connect wallet";
+  elements.walletButtonHint.textContent = connected && state.account ? shortAddress(state.account) : "OKX or any EVM wallet";
 }
 
 async function getReadContract() {
@@ -237,7 +245,7 @@ async function connectWallet() {
   const chain = config.chains[Number(network.chainId)];
   elements.networkName.textContent = chain?.chainName || `Chain ${network.chainId}`;
   elements.walletAddress.textContent = shortAddress(state.account);
-  elements.connectWallet.textContent = "Disconnect";
+  setWalletButton(true);
 
   if (contractAddress) await bindContract(contractAddress);
   await refreshAll();
@@ -254,7 +262,7 @@ async function disconnectWallet() {
   elements.networkName.textContent = config.chains[config.preferredChainId]?.chainName || "X Layer";
   elements.walletAddress.textContent = "-";
   elements.walletRole.textContent = "Viewer";
-  elements.connectWallet.textContent = "Connect wallet";
+  setWalletButton(false);
   renderFanProfile();
   renderShotState();
   setStatus("Wallet disconnected in this app. Revoke site access in your wallet for a full provider disconnect.", "success");
@@ -692,6 +700,7 @@ elements.shareProfile.addEventListener("click", () => {
 });
 
 setContractStatus();
+setWalletButton(false);
 renderFanProfile();
 loadSquads();
 refreshAll();

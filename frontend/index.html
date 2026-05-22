@@ -32,7 +32,13 @@
           </p>
         </div>
         <div class="hero-actions">
-          <button id="connectWallet" class="primary">Connect wallet</button>
+          <button id="connectWallet" class="primary wallet-button" type="button" data-connected="false">
+            <span class="wallet-icon" aria-hidden="true"></span>
+            <span class="wallet-copy">
+              <strong id="walletButtonLabel">Connect wallet</strong>
+              <small id="walletButtonHint">OKX or any EVM wallet</small>
+            </span>
+          </button>
           <button id="deployContract" class="ghost">Deploy contract</button>
         </div>
       </section>
