@@ -251,7 +251,39 @@ async function connectWallet() {
   await refreshAll();
 }
 
-async function disconnectWallet() {
+async function restoreWalletSession() {
+  if (!window.ethereum) return false;
+
+  try {
+    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+    if (!accounts?.length) return false;
+
+    const chain = config.chains[config.preferredChainId];
+    const current = await window.ethereum.request({ method: "eth_chainId" });
+    if (current !== chain.chainIdHex) {
+      setStatus("Wallet is authorized. Click Connect wallet to switch back to X Layer.", "neutral");
+      return false;
+    }
+
+    state.provider = new ethers.BrowserProvider(window.ethereum);
+    state.signer = await state.provider.getSigner();
+    state.account = await state.signer.getAddress();
+
+    const network = await state.provider.getNetwork();
+    const networkConfig = config.chains[Number(network.chainId)];
+    elements.networkName.textContent = networkConfig?.chainName || `Chain ${network.chainId}`;
+    elements.walletAddress.textContent = shortAddress(state.account);
+    setWalletButton(true);
+
+    if (contractAddress) await bindContract(contractAddress);
+    await refreshAll();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function disconnectWallet(showStatus = true) {
   state.provider = null;
   state.signer = null;
   state.contract = null;
@@ -265,7 +297,9 @@ async function disconnectWallet() {
   setWalletButton(false);
   renderFanProfile();
   renderShotState();
-  setStatus("Wallet disconnected in this app. Revoke site access in your wallet for a full provider disconnect.", "success");
+  if (showStatus) {
+    setStatus("Wallet disconnected in this app. Revoke site access in your wallet for a full provider disconnect.", "success");
+  }
 }
 
 async function bindContract(address) {
@@ -699,8 +733,27 @@ elements.shareProfile.addEventListener("click", () => {
   window.open(url, "_blank", "noopener,noreferrer");
 });
 
-setContractStatus();
-setWalletButton(false);
-renderFanProfile();
-loadSquads();
-refreshAll();
+if (window.ethereum?.on) {
+  window.ethereum.on("accountsChanged", async (accounts) => {
+    if (!accounts?.length) {
+      await disconnectWallet(false);
+      setStatus("Wallet access was removed.", "neutral");
+      return;
+    }
+    await restoreWalletSession();
+  });
+
+  window.ethereum.on("chainChanged", () => {
+    window.location.reload();
+  });
+}
+
+async function initApp() {
+  setContractStatus();
+  setWalletButton(false);
+  renderFanProfile();
+  const restored = await restoreWalletSession();
+  if (!restored) await refreshAll();
+}
+
+initApp();
