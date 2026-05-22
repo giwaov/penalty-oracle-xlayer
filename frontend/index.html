@@ -39,7 +39,6 @@
               <small id="walletButtonHint">OKX or any EVM wallet</small>
             </span>
           </button>
-          <button id="deployContract" class="ghost" hidden>Deploy contract</button>
         </div>
       </section>
 
@@ -82,7 +81,6 @@
           <div class="panel-head">
             <h2>Daily Penalty</h2>
             <div class="panel-actions">
-              <button id="practiceShot" class="ghost small">Practice Mode</button>
               <span class="tx-pill">1 shot = 1 tx</span>
               <span id="shotLimit" class="panel-kicker">Five shots per day</span>
             </div>
@@ -107,6 +105,7 @@
             <div id="ball" class="ball" aria-hidden="true"></div>
           </div>
           <div id="resultBanner" class="result-banner">Choose your squad, then every kick becomes one X Layer transaction.</div>
+          <button id="practiceShot" class="practice-link" type="button">Try an off-chain practice shot</button>
         </div>
 
         <div class="panel oracle-panel">
@@ -173,7 +172,7 @@
       <section class="panel leaderboard-panel">
         <div class="panel-head">
           <h2>Country Leaderboard</h2>
-          <span class="panel-kicker">48 qualified squads</span>
+          <span class="panel-kicker">World Cup squads</span>
         </div>
         <div id="leaderboard" class="leaderboard"></div>
       </section>
@@ -226,7 +225,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.16.0/dist/ethers.umd.min.js"></script>
     <script src="./config.js"></script>
-    <script src="./artifact.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

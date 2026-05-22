@@ -100,7 +100,6 @@ let contractAddress = config.contractAddress || localStorage.getItem("penalty.co
 
 const elements = {
   connectWallet: document.querySelector("#connectWallet"),
-  deployContract: document.querySelector("#deployContract"),
   networkName: document.querySelector("#networkName"),
   walletAddress: document.querySelector("#walletAddress"),
   walletButtonLabel: document.querySelector("#walletButtonLabel"),
@@ -172,7 +171,6 @@ function flagFromIso(iso) {
 
 function setContractStatus() {
   elements.contractStatus.textContent = contractAddress ? shortAddress(contractAddress) : "Not deployed";
-  elements.deployContract.hidden = Boolean(contractAddress);
   elements.contractLink.href = contractAddress ? explorerAddressUrl(contractAddress) : "#";
 }
 
@@ -349,8 +347,7 @@ async function bindContract(address) {
   config.contractAddress = address;
   localStorage.setItem("penalty.contractAddress", address);
   elements.contractStatus.textContent = shortAddress(address);
-  elements.deployContract.hidden = true;
-  elements.walletRole.textContent = state.isOwner ? "Deployer admin" : "Fan";
+  elements.walletRole.textContent = "Fan";
   setContractStatus();
 }
 
@@ -1038,31 +1035,6 @@ elements.connectWallet.addEventListener("click", async () => {
     return;
   }
   await connectWallet();
-});
-
-elements.deployContract.addEventListener("click", async () => {
-  if (!state.signer) await connectWallet();
-  if (!state.signer) return;
-
-  try {
-    if (!window.XCUP_ARTIFACT?.bytecode) {
-      setStatus("Missing contract bytecode artifact.", "error");
-      return;
-    }
-    setStatus("Contract deployment: waiting for wallet confirmation...");
-    const factory = new ethers.ContractFactory(abi, window.XCUP_ARTIFACT.bytecode, state.signer);
-    const contract = await factory.deploy();
-    const tx = contract.deploymentTransaction();
-    setStatus(`Contract deployment: submitted ${shortAddress(tx.hash)}`);
-    await contract.waitForDeployment();
-    const address = await contract.getAddress();
-    await bindContract(address);
-    setStatus(`Contract deployed at ${address}. This connected wallet is the owner.`, "success");
-    await refreshAll();
-  } catch (error) {
-    const reason = error?.shortMessage || error?.reason || error?.message || "Deployment failed";
-    setStatus(reason, "error");
-  }
 });
 
 for (const button of elements.shotButtons) {

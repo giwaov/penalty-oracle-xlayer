@@ -18,7 +18,7 @@ if (Test-Path $outputRoot) {
 
 New-Item -ItemType Directory -Force -Path $staticRoot | Out-Null
 
-$files = @("index.html", "styles.css", "app.js", "config.js", "artifact.js", "vercel.json", "package.json")
+$files = @("index.html", "styles.css", "app.js", "config.js", "vercel.json", "package.json")
 foreach ($file in $files) {
   Copy-Item -LiteralPath (Join-Path $frontendRoot $file) -Destination (Join-Path $staticRoot $file) -Force
 }

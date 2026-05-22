@@ -722,6 +722,25 @@ h1 {
   font-weight: 800;
 }
 
+.practice-link {
+  min-height: 34px;
+  margin-top: 10px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.practice-link:hover:not(:disabled) {
+  color: var(--gold);
+  transform: none;
+}
+
 .result-banner[data-result="goal"] {
   border-color: rgba(50, 241, 138, 0.45);
   background: rgba(50, 241, 138, 0.08);
