@@ -1,6 +1,6 @@
 # XKick
 
-XKick is a World Cup AI shootout game built for the X Layer Build X Hackathon. Fans connect a wallet, choose one of the 48 qualified World Cup squads, take five on-chain penalties per day, and compete on live wallet and country leaderboards.
+XKick is a World Cup AI shootout game built for the X Layer Build X Hackathon. Fans connect a wallet, choose one of the 48 qualified World Cup squads, take five on-chain penalties per day, compete on live wallet and country leaderboards, and get an AI match report after every shot.
 
 Live demo: https://xkick.vercel.app
 
@@ -14,17 +14,18 @@ X Layer contract: `0xC805aF7B45a952EA1A4DA7851b949e3692b7EB77`
 - Records five daily penalties per wallet
 - Awards points for goals, streaks, and saved-shot grit
 - Registers every joined wallet on-chain for a real player leaderboard
+- Tracks daily wallet points, daily goals, and the UTC reset race on-chain
 - Shows a live leaderboard for all 48 qualified World Cup teams
 - Streams recent on-chain penalties from contract events
-- Uses an AI Oracle Agent for short match-style commentary and momentum insights
+- Uses an AI Oracle Agent for commentary, momentum insights, and shareable match reports
 - Includes Practice Mode so nontechnical users can try the flow without gas
 
 ## Hackathon Fit
 
 - World Cup theme: country squads, penalties, fan streaks, live tournament energy
 - X Layer deployment: the core game contract is deployed on X Layer mainnet
-- AI Agent track: OpenAI-backed Oracle commentary plus deterministic fallback
-- GameFi/social track: daily fan actions, wallet-vs-wallet ranking, country leaderboards, shareable fan passports
+- AI Agent track: OpenAI-backed Oracle commentary, match reports, and deterministic fallback
+- GameFi/social track: daily fan actions, wallet-vs-wallet ranking, country leaderboards, shareable fan passports and X posts
 - Market potential: simple, repeatable match-day behavior that turns football attention into X Layer transactions
 
 The squad list follows FIFA's published 48-team qualified field for World Cup 2026:

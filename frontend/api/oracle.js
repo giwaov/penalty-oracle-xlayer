@@ -3,6 +3,14 @@ const fallback = (stats) => {
   const chaser = stats?.chaser;
   const lastResult = stats?.lastResult;
 
+  if (stats?.purpose === "report" && lastResult) {
+    const rank = stats?.player?.rank ? `Wallet rank #${stats.player.rank}` : "Wallet rank pending";
+    const todayRank = stats?.player?.todayRank ? `today #${stats.player.todayRank}` : "today board pending";
+    return lastResult.goal
+      ? `${lastResult.squad} delivers under pressure: ${lastResult.shot} shot, keeper ${lastResult.keeper}, ${lastResult.points} points. ${rank}, ${todayRank}.`
+      : `${lastResult.squad} survives a keeper read: ${lastResult.shot} shot met by ${lastResult.keeper}, ${lastResult.points} grit points. ${rank}, ${todayRank}.`;
+  }
+
   if (lastResult) {
     return lastResult.goal
       ? `${lastResult.squad} scores. The AI keeper guessed ${lastResult.keeper}, but the shot went ${lastResult.shot}. The squad earns ${lastResult.points} points.`
@@ -44,6 +52,7 @@ async function readJson(req) {
 
 function normalizeBody(body) {
   return {
+    purpose: String(body?.purpose || "commentary").slice(0, 20),
     totalShots: Number(body?.totalShots || 0),
     totalGoals: Number(body?.totalGoals || 0),
     leader: body?.leader
@@ -62,6 +71,14 @@ function normalizeBody(body) {
           goals: Number(body.chaser.goals || 0),
           shots: Number(body.chaser.shots || 0),
           todayPoints: Number(body.chaser.todayPoints || 0),
+        }
+      : null,
+    player: body?.player
+      ? {
+          rank: Number(body.player.rank || 0),
+          todayRank: Number(body.player.todayRank || 0),
+          points: Number(body.player.points || 0),
+          streak: Number(body.player.streak || 0),
         }
       : null,
     lastResult: body?.lastResult
@@ -123,7 +140,9 @@ module.exports = async (req, res) => {
           {
             role: "system",
             content:
-              "You are the XKick Oracle, a punchy World Cup AI commentator for an on-chain X Layer penalty shootout game. Write one vivid sentence under 45 words. No hashtags. No markdown.",
+              body.purpose === "report"
+                ? "You are the XKick Oracle, writing a shareable World Cup match report for an on-chain X Layer penalty shootout. Write one vivid sentence under 42 words. Mention wallet rank if present. No hashtags. No markdown."
+                : "You are the XKick Oracle, a punchy World Cup AI commentator for an on-chain X Layer penalty shootout game. Write one vivid sentence under 45 words. No hashtags. No markdown.",
           },
           {
             role: "user",

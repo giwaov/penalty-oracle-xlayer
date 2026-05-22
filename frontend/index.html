@@ -27,8 +27,8 @@
           <p class="eyebrow">World Cup AI shootout</p>
           <h1>Beat the AI keeper. Carry your squad.</h1>
           <p class="lede">
-            Pick a country, take five penalties per day, and climb the on-chain leaderboard with goals,
-            streaks, and dramatic Oracle commentary.
+            Pick a country, take five penalties per day, climb the on-chain wallet and country tables,
+            and share Oracle match reports after every shot.
           </p>
         </div>
         <div class="hero-actions">
@@ -39,7 +39,7 @@
               <small id="walletButtonHint">OKX or any EVM wallet</small>
             </span>
           </button>
-          <button id="deployContract" class="ghost">Deploy contract</button>
+          <button id="deployContract" class="ghost" hidden>Deploy contract</button>
         </div>
       </section>
 
@@ -130,6 +130,38 @@
         <div><span>Top Squad</span><strong id="topSquadMetric">Awaiting shots</strong></div>
       </section>
 
+      <section class="race-grid">
+        <div class="panel race-panel">
+          <div class="panel-head">
+            <h2>Today's Race</h2>
+            <span id="resetCountdown" class="panel-kicker">Reset at 00:00 UTC</span>
+          </div>
+          <div class="race-board">
+            <div>
+              <span>Top wallet today</span>
+              <strong id="todayTopWallet">Awaiting shots</strong>
+            </div>
+            <div>
+              <span>Top squad today</span>
+              <strong id="todayTopSquad">Awaiting shots</strong>
+            </div>
+          </div>
+          <div id="chaseTarget" class="note-strip">Take a shot to enter today's race.</div>
+        </div>
+
+        <div class="panel report-panel">
+          <div class="panel-head">
+            <h2>AI Match Report</h2>
+            <button id="shareReport" class="ghost small" disabled>Share on X</button>
+          </div>
+          <div id="matchReportCard" class="match-report-card">
+            <span id="matchReportTitle">No shot report yet</span>
+            <strong id="matchReportBody">Take a real penalty and the Oracle Agent will turn it into a shareable match report.</strong>
+            <small id="matchReportMeta">Reports include your squad, result, streak, wallet rank, and X Layer proof.</small>
+          </div>
+        </div>
+      </section>
+
       <section class="panel leaderboard-panel">
         <div class="panel-head">
           <h2>Player Leaderboard</h2>
@@ -178,11 +210,11 @@
           <article>
             <span>4</span>
             <strong>Climb the table</strong>
-            <p>Each wallet gets five daily penalties. Goals and streaks add points to your wallet rank and country leaderboard.</p>
+            <p>Each wallet gets five daily penalties. Goals and streaks add points to your wallet rank, today's race, and country leaderboard.</p>
           </article>
         </div>
         <div class="note-strip">
-          <span>Every squad join and penalty is recorded on X Layer. One wallet gets five shots per day, and registered wallets compete on the player leaderboard.</span>
+          <span>Every squad join and penalty is recorded on X Layer. One wallet gets five shots per day, registered wallets compete on the player leaderboard, and the Oracle Agent creates a shareable report after every shot.</span>
         </div>
       </section>
 

@@ -40,6 +40,8 @@ contract XCupOracleArena {
     mapping(bytes32 => bool) public squadSeen;
     mapping(uint256 => mapping(bytes32 => uint256)) public dailySquadPoints;
     mapping(address => mapping(uint256 => uint256)) public dailyFanShots;
+    mapping(address => mapping(uint256 => uint256)) public dailyFanPoints;
+    mapping(address => mapping(uint256 => uint256)) public dailyFanGoals;
     address[] public players;
     bytes32[] public squadCodes;
 
@@ -152,6 +154,10 @@ contract XCupOracleArena {
         squad.points += pointsAwarded;
         squad.todayPoints += pointsAwarded;
         dailySquadPoints[day][fan.squad] += pointsAwarded;
+        dailyFanPoints[msg.sender][day] += pointsAwarded;
+        if (goal) {
+            dailyFanGoals[msg.sender][day] += 1;
+        }
 
         emit PenaltyTaken(day, msg.sender, fan.squad, shot, keeper, goal, pointsAwarded, fan.streak);
     }

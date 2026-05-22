@@ -5,6 +5,8 @@ const abi = [
   "function currentDay() view returns (uint256)",
   "function DAILY_SHOT_LIMIT() view returns (uint256)",
   "function dailyFanShots(address fan,uint256 day) view returns (uint256)",
+  "function dailyFanPoints(address fan,uint256 day) view returns (uint256)",
+  "function dailyFanGoals(address fan,uint256 day) view returns (uint256)",
   "function getFan(address fan) view returns (bytes32,uint256,uint256,uint256,uint256,uint256,uint256,uint256,bool)",
   "function getSquad(bytes32 squad) view returns (uint256,uint256,uint256,uint256,uint256,uint256)",
   "function playerCount() view returns (uint256)",
@@ -86,8 +88,11 @@ const state = {
   currentDay: 0,
   dailyShotLimit: 5,
   lastResult: null,
+  matchReport: null,
   recentShots: [],
   oracleRequestId: 0,
+  reportRequestId: 0,
+  countdownTimer: null,
 };
 
 const config = window.XCUP_CONFIG;
@@ -125,6 +130,14 @@ const elements = {
   playerLeaderboard: document.querySelector("#playerLeaderboard"),
   leaderboard: document.querySelector("#leaderboard"),
   activityFeed: document.querySelector("#activityFeed"),
+  resetCountdown: document.querySelector("#resetCountdown"),
+  todayTopWallet: document.querySelector("#todayTopWallet"),
+  todayTopSquad: document.querySelector("#todayTopSquad"),
+  chaseTarget: document.querySelector("#chaseTarget"),
+  shareReport: document.querySelector("#shareReport"),
+  matchReportTitle: document.querySelector("#matchReportTitle"),
+  matchReportBody: document.querySelector("#matchReportBody"),
+  matchReportMeta: document.querySelector("#matchReportMeta"),
   contractLink: document.querySelector("#contractLink"),
 };
 
@@ -204,6 +217,17 @@ function setStatus(message, tone = "neutral", txHash = "") {
     link.textContent = "View tx";
     elements.txStatus.append(link);
   }
+}
+
+function updateResetCountdown() {
+  const now = Date.now();
+  const nextUtcMidnight = new Date(now);
+  nextUtcMidnight.setUTCHours(24, 0, 0, 0);
+  const remaining = Math.max(0, nextUtcMidnight.getTime() - now);
+  const hours = Math.floor(remaining / 3600000);
+  const minutes = Math.floor((remaining % 3600000) / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+  elements.resetCountdown.textContent = `UTC reset in ${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 async function transact(label, txFactory, afterReceipt, afterRefresh) {
@@ -363,7 +387,7 @@ async function loadFanProfile() {
     renderFanProfile();
     return;
   }
-  const profile = await state.contract.getFan(state.account);
+    const profile = await state.contract.getFan(state.account);
   let todayShots = 0;
   try {
     todayShots = Number(await state.contract.dailyFanShots(state.account, state.currentDay));
@@ -383,6 +407,28 @@ async function loadFanProfile() {
     exists: profile[8],
   };
   renderFanProfile();
+}
+
+async function readDailyPlayerStats(contract, address) {
+  let todayShots = 0;
+  let todayPoints = 0;
+  let todayGoals = 0;
+  try {
+    todayShots = Number(await contract.dailyFanShots(address, state.currentDay));
+  } catch {
+    todayShots = 0;
+  }
+  try {
+    todayPoints = Number(await contract.dailyFanPoints(address, state.currentDay));
+  } catch {
+    todayPoints = 0;
+  }
+  try {
+    todayGoals = Number(await contract.dailyFanGoals(address, state.currentDay));
+  } catch {
+    todayGoals = 0;
+  }
+  return { todayShots, todayPoints, todayGoals };
 }
 
 async function loadSquads() {
@@ -410,6 +456,7 @@ async function loadSquads() {
   );
   renderSquads();
   renderLeaderboard();
+  renderTodayRace();
 }
 
 async function loadPlayers() {
@@ -433,12 +480,7 @@ async function loadPlayers() {
         const profile = await contract.getFan(checksumAddress);
         const squadCode = parseSquadCode(profile[0]);
         const squad = squads.find((item) => item.code === squadCode);
-        let todayShots = 0;
-        try {
-          todayShots = Number(await contract.dailyFanShots(checksumAddress, state.currentDay));
-        } catch {
-          todayShots = 0;
-        }
+        const daily = await readDailyPlayerStats(contract, checksumAddress);
 
         return {
           address: checksumAddress,
@@ -451,7 +493,9 @@ async function loadPlayers() {
           saves: Number(profile[4]),
           streak: Number(profile[5]),
           bestStreak: Number(profile[6]),
-          todayShots,
+          todayShots: daily.todayShots,
+          todayPoints: daily.todayPoints,
+          todayGoals: daily.todayGoals,
         };
       })
     );
@@ -460,6 +504,7 @@ async function loadPlayers() {
   }
 
   renderPlayerLeaderboard();
+  renderTodayRace();
 }
 
 async function loadRecentShots() {
@@ -564,11 +609,61 @@ function renderPlayerLeaderboard() {
       <strong>${shortAddress(player.address)}</strong>
       <small>${player.points} pts</small>
       <small>${player.goals}/${player.shots} goals</small>
-      <small>${player.streak} streak</small>
+      <small>${player.todayPoints} today</small>
       <small>${player.bestStreak} best</small>
     `;
     elements.playerLeaderboard.append(row);
   }
+}
+
+function rankedPlayersToday() {
+  return [...state.playerStats]
+    .filter((player) => player.todayShots > 0 || player.todayPoints > 0)
+    .sort((a, b) => b.todayPoints - a.todayPoints || b.todayGoals - a.todayGoals || b.points - a.points || a.address.localeCompare(b.address));
+}
+
+function rankedSquadsToday() {
+  return [...state.squadStats]
+    .filter((squad) => squad.todayPoints > 0 || squad.shots > 0)
+    .sort((a, b) => b.todayPoints - a.todayPoints || b.points - a.points || a.name.localeCompare(b.name));
+}
+
+function getPlayerRank(address, mode = "allTime") {
+  if (!address) return null;
+  const ranked =
+    mode === "today"
+      ? rankedPlayersToday()
+      : [...state.playerStats].sort((a, b) => b.points - a.points || b.goals - a.goals || b.bestStreak - a.bestStreak || a.address.localeCompare(b.address));
+  const index = ranked.findIndex((player) => player.address.toLowerCase() === address.toLowerCase());
+  return index >= 0 ? index + 1 : null;
+}
+
+function renderTodayRace() {
+  const topPlayers = rankedPlayersToday();
+  const topSquads = rankedSquadsToday();
+  const topPlayer = topPlayers[0];
+  const topSquad = topSquads[0];
+
+  elements.todayTopWallet.textContent = topPlayer ? `${shortAddress(topPlayer.address)} - ${topPlayer.todayPoints} pts` : "Awaiting shots";
+  elements.todayTopSquad.textContent = topSquad ? `${flagFromIso(topSquad.iso)} ${topSquad.name} - ${topSquad.todayPoints} pts` : "Awaiting shots";
+
+  if (!state.account || !state.fan?.squad) {
+    elements.chaseTarget.textContent = "Join a squad and take a shot to enter today's race.";
+    return;
+  }
+
+  const me = state.playerStats.find((player) => player.address.toLowerCase() === state.account.toLowerCase());
+  if (!topPlayer || !me?.todayShots) {
+    elements.chaseTarget.textContent = "Your first real shot today will put your wallet on the daily board.";
+    return;
+  }
+
+  const todayRank = getPlayerRank(state.account, "today");
+  const gap = Math.max(0, topPlayer.todayPoints - me.todayPoints);
+  elements.chaseTarget.textContent =
+    todayRank === 1
+      ? `You are #1 today with ${me.todayPoints} points. Defend the spot before the UTC reset.`
+      : `You are #${todayRank || "-"} today with ${me.todayPoints} points. ${gap} points behind the daily leader.`;
 }
 
 function renderLeaderboard() {
@@ -681,6 +776,84 @@ function renderPenaltyResult(result) {
   setResultBanner(message, result.goal ? "goal" : "save");
 }
 
+function buildMatchReportText(result) {
+  if (!result) return null;
+  const rank = state.account ? getPlayerRank(state.account) : null;
+  const todayRank = state.account ? getPlayerRank(state.account, "today") : null;
+  const fan = state.fan;
+  const rankText = rank ? `Wallet rank #${rank}` : "Wallet rank pending";
+  const todayText = todayRank ? `today #${todayRank}` : "today board pending";
+  const streakText = fan?.streak ? `${fan.streak} streak` : "streak reset";
+  const proofText = result.hash ? `Proof: ${shortAddress(result.hash)}` : "Practice report";
+
+  return {
+    title: result.goal ? "Oracle report: goal" : "Oracle report: saved",
+    body: result.goal
+      ? `${result.squad} scores on XKick. Shot ${result.shot}, keeper ${result.keeper}. +${result.points} points, ${streakText}, ${rankText}, ${todayText}.`
+      : `${result.squad} is denied on XKick. Shot ${result.shot}, keeper ${result.keeper}. +${result.points} grit points, ${rankText}, ${todayText}.`,
+    meta: proofText,
+    shareText: `I just ${result.goal ? "scored" : "took"} a World Cup AI penalty for ${result.squad} on XKick. +${result.points} pts. ${rankText}. Built on @XLayerOfficial.`,
+  };
+}
+
+function renderMatchReport(report) {
+  state.matchReport = report;
+  if (!report) {
+    elements.matchReportTitle.textContent = "No shot report yet";
+    elements.matchReportBody.textContent = "Take a real penalty and the Oracle Agent will turn it into a shareable match report.";
+    elements.matchReportMeta.textContent = "Reports include your squad, result, streak, wallet rank, and X Layer proof.";
+    elements.shareReport.disabled = true;
+    return;
+  }
+
+  elements.matchReportTitle.textContent = report.title;
+  elements.matchReportBody.textContent = report.body;
+  elements.matchReportMeta.textContent = report.meta;
+  elements.shareReport.disabled = !report.shareText;
+}
+
+async function requestMatchReport(result) {
+  const fallbackReport = buildMatchReportText(result);
+  renderMatchReport(fallbackReport);
+  if (!result?.hash) return;
+
+  const requestId = ++state.reportRequestId;
+  const ranked = [...state.squadStats].sort((a, b) => b.points - a.points);
+  const body = {
+    purpose: "report",
+    totalShots: state.totalShots,
+    totalGoals: state.totalGoals,
+    leader: ranked[0] || null,
+    chaser: ranked[1] || null,
+    lastResult: result,
+    player: {
+      address: state.account,
+      rank: state.account ? getPlayerRank(state.account) : null,
+      todayRank: state.account ? getPlayerRank(state.account, "today") : null,
+      points: state.fan?.points || 0,
+      streak: state.fan?.streak || 0,
+    },
+  };
+
+  try {
+    const response = await fetch("/api/oracle", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    if (requestId !== state.reportRequestId || !data.commentary) return;
+    renderMatchReport({
+      ...fallbackReport,
+      body: data.commentary,
+      shareText: `${data.commentary} Play XKick on X Layer: ${location.origin} @XLayerOfficial`,
+    });
+  } catch {
+    // Keep deterministic report.
+  }
+}
+
 function renderShotState() {
   const fan = state.fan;
   const todayShots = fan?.todayShots || 0;
@@ -785,6 +958,8 @@ function parsePenaltyReceipt(receipt) {
       const squadCode = parseSquadCode(parsed.args.squad);
       const squad = squads.find((item) => item.code === squadCode);
       return {
+        fan: parsed.args.fan,
+        squadCode,
         squad: squad?.name || squadCode,
         shot: directions[Number(parsed.args.shot)],
         keeper: directions[Number(parsed.args.keeper)],
@@ -792,6 +967,7 @@ function parsePenaltyReceipt(receipt) {
         keeperIndex: Number(parsed.args.keeper),
         goal: parsed.args.goal,
         points: Number(parsed.args.pointsAwarded),
+        streak: Number(parsed.args.streak),
         hash: receipt.hash,
       };
     } catch {
@@ -830,6 +1006,7 @@ async function takeShot(direction) {
     },
     () => {
       renderPenaltyResult(state.lastResult);
+      requestMatchReport(state.lastResult);
     }
   );
 }
@@ -850,6 +1027,7 @@ function practiceShot() {
     points: goal ? 115 : 15,
   };
   renderPenaltyResult(state.lastResult);
+  renderMatchReport(buildMatchReportText(state.lastResult));
   renderOracleCommentary([...state.squadStats].sort((a, b) => b.points - a.points));
   setStatus("Practice Mode result is off-chain. Connect and shoot to record a real X Layer penalty.", "success");
 }
@@ -904,6 +1082,12 @@ elements.shareProfile.addEventListener("click", () => {
   window.open(url, "_blank", "noopener,noreferrer");
 });
 
+elements.shareReport.addEventListener("click", () => {
+  if (!state.matchReport?.shareText) return;
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(state.matchReport.shareText)}&url=${encodeURIComponent(location.href)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+});
+
 if (window.ethereum?.on) {
   window.ethereum.on("accountsChanged", async (accounts) => {
     if (!accounts?.length) {
@@ -923,6 +1107,9 @@ async function initApp() {
   setContractStatus();
   setWalletButton(false);
   renderFanProfile();
+  renderMatchReport(null);
+  updateResetCountdown();
+  state.countdownTimer = window.setInterval(updateResetCountdown, 1000);
   const restored = await restoreWalletSession();
   if (!restored) await refreshAll();
 }

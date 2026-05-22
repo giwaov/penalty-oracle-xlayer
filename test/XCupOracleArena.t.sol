@@ -110,6 +110,8 @@ contract XCupOracleArenaTest {
         require(squadShots == 1, "bad squad shots");
         require(squadGoals + squadSaves == 1, "bad squad result");
         require(todayPoints == points, "bad today points");
+        require(arena.dailyFanPoints(fan, block.timestamp / 1 days) == points, "bad fan today points");
+        require(arena.dailyFanGoals(fan, block.timestamp / 1 days) == goals, "bad fan today goals");
         require(arena.totalShots() == 1, "bad total shots");
     }
 
