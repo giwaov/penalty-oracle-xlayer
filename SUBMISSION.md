@@ -2,7 +2,7 @@
 
 ## Project Name
 
-Penalty Oracle
+XKick
 
 ## Track
 
@@ -10,7 +10,7 @@ AI Agent / GameFi / Social / Fan engagement
 
 ## Summary
 
-Penalty Oracle is a World Cup AI shootout game on X Layer. Fans connect a wallet, join one of the 48 qualified World Cup squads, take one daily on-chain penalty, and compete through fan passports, squad leaderboards, live arena events, and AI Oracle commentary.
+XKick is a World Cup AI shootout game on X Layer. Fans connect a wallet, join one of the 48 qualified World Cup squads, take one daily on-chain penalty, and compete through fan passports, squad leaderboards, live arena events, and AI Oracle commentary.
 
 ## What I Built
 
@@ -44,7 +44,7 @@ The user opens the app, tries Practice Mode if they do not have gas, connects an
 
 ## Why It Matters
 
-World Cup traffic is emotional, daily, and global. Penalty Oracle gives fans a one-click football ritual that creates real X Layer activity: join a squad, shoot once per day, build streaks, share the result, and watch country momentum shift in public. Practice Mode lowers the entry barrier, while the live feed and AI agent make the product feel active even before a user connects a wallet.
+World Cup traffic is emotional, daily, and global. XKick gives fans a one-click football ritual that creates real X Layer activity: join a squad, shoot once per day, build streaks, share the result, and watch country momentum shift in public. Practice Mode lowers the entry barrier, while the live feed and AI agent make the product feel active even before a user connects a wallet.
 
 ## Submission Checklist
 

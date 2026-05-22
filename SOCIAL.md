@@ -1,12 +1,12 @@
 # X Posting Plan
 
-Dedicated account suggestion: `@PenaltyOracle`
+Dedicated account suggestion: `@XKick`
 
 Always tag `@XLayerOfficial` on launch and submission posts.
 
 ## Launch Post
 
-We are building Penalty Oracle for the X Layer Build X Hackathon.
+We are building XKick for the X Layer Build X Hackathon.
 
 Pick a World Cup squad.
 Take one daily on-chain penalty.
@@ -19,7 +19,7 @@ Live on X Layer.
 
 ## Daily Build Log Template
 
-Day N of Penalty Oracle:
+Day N of XKick:
 
 - shipped:
 - next:
@@ -44,7 +44,7 @@ Demo: {DEMO}
 
 ## Submission Post
 
-Submission: Penalty Oracle
+Submission: XKick
 
 A World Cup AI shootout game on X Layer.
 

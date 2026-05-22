@@ -123,7 +123,7 @@ module.exports = async (req, res) => {
           {
             role: "system",
             content:
-              "You are the Penalty Oracle, a punchy World Cup AI commentator for an on-chain X Layer penalty shootout game. Write one vivid sentence under 45 words. No hashtags. No markdown.",
+              "You are the XKick Oracle, a punchy World Cup AI commentator for an on-chain X Layer penalty shootout game. Write one vivid sentence under 45 words. No hashtags. No markdown.",
           },
           {
             role: "user",

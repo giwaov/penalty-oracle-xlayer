@@ -686,7 +686,7 @@ elements.shareProfile.addEventListener("click", () => {
   const fan = state.fan;
   if (!fan?.squad) return;
   const squad = squads.find((item) => item.code === fan.squad);
-  const text = `I joined ${squad?.name || fan.squad} Squad on Penalty Oracle: ${fan.points} pts, ${fan.goals}/${fan.shots} goals, ${fan.streak} streak. Built on @XLayerOfficial.`;
+  const text = `I joined ${squad?.name || fan.squad} Squad on XKick: ${fan.points} pts, ${fan.goals}/${fan.shots} goals, ${fan.streak} streak. Built on @XLayerOfficial.`;
   const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(location.href)}`;
   window.open(url, "_blank", "noopener,noreferrer");
 });
