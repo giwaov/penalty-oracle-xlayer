@@ -77,6 +77,7 @@ const state = {
   readProvider: null,
   readContract: null,
   contract: null,
+  walletProvider: null,
   account: null,
   owner: null,
   isOwner: false,
@@ -97,6 +98,7 @@ const state = {
 
 const config = window.XCUP_CONFIG;
 let contractAddress = config.contractAddress || localStorage.getItem("penalty.contractAddress");
+const boundWalletProviders = new WeakSet();
 
 const elements = {
   connectWallet: document.querySelector("#connectWallet"),
@@ -177,7 +179,56 @@ function setContractStatus() {
 function setWalletButton(connected = false) {
   elements.connectWallet.dataset.connected = connected ? "true" : "false";
   elements.walletButtonLabel.textContent = connected ? "Disconnect" : "Connect wallet";
-  elements.walletButtonHint.textContent = connected && state.account ? shortAddress(state.account) : "OKX or any EVM wallet";
+  elements.walletButtonHint.textContent = connected && state.account ? shortAddress(state.account) : "OKX Wallet preferred";
+}
+
+function collectWalletProviders() {
+  const providers = [];
+  const seen = new Set();
+  const addProvider = (provider, label = "EVM wallet") => {
+    if (!provider?.request || seen.has(provider)) return;
+    seen.add(provider);
+    providers.push({ provider, label });
+  };
+
+  addProvider(window.okxwallet, "OKX Wallet");
+  addProvider(window.okxwallet?.ethereum, "OKX Wallet");
+  if (Array.isArray(window.ethereum?.providers)) {
+    const okxProvider = window.ethereum.providers.find((provider) => provider?.isOkxWallet || provider?.isOKExWallet);
+    addProvider(okxProvider, "OKX Wallet");
+    for (const provider of window.ethereum.providers) {
+      addProvider(provider, provider?.isMetaMask ? "MetaMask" : "EVM wallet");
+    }
+  }
+  addProvider(window.ethereum, window.ethereum?.isMetaMask ? "MetaMask" : "EVM wallet");
+
+  return providers;
+}
+
+async function waitForWalletProvider(timeoutMs = 1000) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    const [candidate] = collectWalletProviders();
+    if (candidate) return candidate;
+    await new Promise((resolve) => window.setTimeout(resolve, 100));
+  }
+  return collectWalletProviders()[0] || null;
+}
+
+function bindWalletEvents(provider) {
+  if (!provider?.on || boundWalletProviders.has(provider)) return;
+  boundWalletProviders.add(provider);
+  provider.on("accountsChanged", async (accounts) => {
+    if (!accounts?.length) {
+      await disconnectWallet(false);
+      setStatus("Wallet access was removed.", "neutral");
+      return;
+    }
+    await restoreWalletSession();
+  });
+  provider.on("chainChanged", () => {
+    window.location.reload();
+  });
 }
 
 async function getReadContract() {
@@ -246,19 +297,19 @@ async function transact(label, txFactory, afterReceipt, afterRefresh) {
   }
 }
 
-async function ensureXLayer() {
+async function ensureXLayer(walletProvider) {
   const chain = config.chains[config.preferredChainId];
-  const current = await window.ethereum.request({ method: "eth_chainId" });
+  const current = await walletProvider.request({ method: "eth_chainId" });
   if (current === chain.chainIdHex) return;
 
   try {
-    await window.ethereum.request({
+    await walletProvider.request({
       method: "wallet_switchEthereumChain",
       params: [{ chainId: chain.chainIdHex }],
     });
   } catch (error) {
     if (error.code !== 4902) throw error;
-    await window.ethereum.request({
+    await walletProvider.request({
       method: "wallet_addEthereumChain",
       params: [chain],
     });
@@ -266,14 +317,17 @@ async function ensureXLayer() {
 }
 
 async function connectWallet() {
-  if (!window.ethereum) {
-    alert("Install OKX Wallet or another EVM wallet to continue.");
+  const wallet = await waitForWalletProvider();
+  if (!wallet) {
+    alert("Install OKX Wallet, or open this page inside the OKX Wallet browser, then try again.");
     return;
   }
 
-  await ensureXLayer();
-  await window.ethereum.request({ method: "eth_requestAccounts" });
-  state.provider = new ethers.BrowserProvider(window.ethereum);
+  state.walletProvider = wallet.provider;
+  bindWalletEvents(state.walletProvider);
+  await ensureXLayer(state.walletProvider);
+  await state.walletProvider.request({ method: "eth_requestAccounts" });
+  state.provider = new ethers.BrowserProvider(state.walletProvider);
   state.signer = await state.provider.getSigner();
   state.account = await state.signer.getAddress();
 
@@ -288,20 +342,23 @@ async function connectWallet() {
 }
 
 async function restoreWalletSession() {
-  if (!window.ethereum) return false;
+  const wallet = await waitForWalletProvider(300);
+  if (!wallet) return false;
 
   try {
-    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+    state.walletProvider = wallet.provider;
+    bindWalletEvents(state.walletProvider);
+    const accounts = await state.walletProvider.request({ method: "eth_accounts" });
     if (!accounts?.length) return false;
 
     const chain = config.chains[config.preferredChainId];
-    const current = await window.ethereum.request({ method: "eth_chainId" });
+    const current = await state.walletProvider.request({ method: "eth_chainId" });
     if (current !== chain.chainIdHex) {
       setStatus("Wallet is authorized. Click Connect wallet to switch back to X Layer.", "neutral");
       return false;
     }
 
-    state.provider = new ethers.BrowserProvider(window.ethereum);
+    state.provider = new ethers.BrowserProvider(state.walletProvider);
     state.signer = await state.provider.getSigner();
     state.account = await state.signer.getAddress();
 
@@ -320,6 +377,7 @@ async function restoreWalletSession() {
 }
 
 async function disconnectWallet(showStatus = true) {
+  state.walletProvider = null;
   state.provider = null;
   state.signer = null;
   state.contract = null;
@@ -1059,21 +1117,6 @@ elements.shareReport.addEventListener("click", () => {
   const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(state.matchReport.shareText)}&url=${encodeURIComponent(location.href)}`;
   window.open(url, "_blank", "noopener,noreferrer");
 });
-
-if (window.ethereum?.on) {
-  window.ethereum.on("accountsChanged", async (accounts) => {
-    if (!accounts?.length) {
-      await disconnectWallet(false);
-      setStatus("Wallet access was removed.", "neutral");
-      return;
-    }
-    await restoreWalletSession();
-  });
-
-  window.ethereum.on("chainChanged", () => {
-    window.location.reload();
-  });
-}
 
 async function initApp() {
   setContractStatus();
